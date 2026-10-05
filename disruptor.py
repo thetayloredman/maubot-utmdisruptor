@@ -28,9 +28,13 @@ def clean_url(url: str) -> str:
     hostname = (parts.hostname or "").lower()
     to_remove = FILTER_FROM_ALL | DOMAIN_FILTERS.get(hostname, set())
 
-    query = [(k, v) for k, v in parse_qsl(parts.query) if k not in to_remove]
+    query = parse_qsl(parts.query)
+    filtered_query = [(k, v) for k, v in query if k not in to_remove]
 
-    return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
+    if filtered_query == query:
+        return url
+
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(filtered_query), parts.fragment))
 
 def clean_message(message: str) -> str:
     return URL_RE.sub(
